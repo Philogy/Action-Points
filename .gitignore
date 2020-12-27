@@ -1,3 +1,8 @@
+# Truffle
+build/contracts
+# Solidity
+*.flat.sol
+
 # Logs
 logs
 *.log
