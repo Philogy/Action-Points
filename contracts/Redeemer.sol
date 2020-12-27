@@ -3,24 +3,24 @@ pragma solidity ^0.7.1;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/math/SafeMath.sol';
+import './IERC20Burnable.sol';
 
-contract Redemption {
+contract Redeemer {
     using SafeMath for uint256;
 
-    IERC20 public apToken;
+    IERC20Burnable public apToken;
     IERC20 public farmToken;
 
-    constructor(IERC20 apToken_, IERC20 farmToken_) {
-        apToken = apToken_;
-        farmToken = farmToken_;
+    constructor(address apTokenAddr, address farmTokenAddr) {
+        apToken = IERC20Burnable(apTokenAddr);
+        farmToken = IERC20(farmTokenAddr);
     }
-
 
     function redeem(uint256 tokens) external {
         require(tokens > 0, 'Cannot redeem 0 tokens');
 
-        uint256 availableFarm = farmToken.balanceOf(address(this));
-        uint256 earnedFarm = tokens.mul(availableFarm).div(apToken.totalSupply());
+        uint256 availableFARM = farmToken.balanceOf(address(this));
+        uint256 earnedFarm = tokens.mul(availableFARM).div(apToken.totalSupply());
 
         apToken.burnFrom(msg.sender, tokens);
         farmToken.transfer(msg.sender, earnedFarm);
