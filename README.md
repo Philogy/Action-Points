@@ -35,3 +35,7 @@ sign the provided hash.
 
 To mint tokens a user must simply supply the signed nonce, token amount and
 signature to the `mintWithOwnerData` method of the ActionPoints contract.
+
+#### 1.2.1 GnosisSafeAdapter
+This contract enables the Action Point Token contract to verify whether a group
+of owners of a Gnosis Safe multisig wallet have signed a specific message.

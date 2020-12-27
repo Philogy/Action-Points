@@ -16,7 +16,7 @@ contract ActionPoints is Ownable, ERC20Burnable {
         uint256 amount,
         bytes calldata data
     ) external {
-        require(owner().isContract(), 'Only a contract can mint');
+        require(owner().isContract(), 'Only contract can verify mint');
 
         IApprovingOwner apOwner = IApprovingOwner(owner());
         require(apOwner.approvesMint(nonce, amount, msg.sender, data), 'Mint denied');
