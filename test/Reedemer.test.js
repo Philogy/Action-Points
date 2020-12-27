@@ -32,8 +32,8 @@ contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
 
   describe('token redemption', () => {
     it('cannot redeem without approval', async () => {
-      const initialApprove = await this.apToken.allowance(user1, this.redeemer.address)
-      expect(initialApprove).to.be.bignumber.equal(new BN('0'))
+      const initialAllowance = await this.apToken.allowance(user1, this.redeemer.address)
+      expect(initialAllowance).to.be.bignumber.equal(new BN('0'))
 
       await expectRevert(
         this.redeemer.redeem(web3.utils.toWei('5'), { from: user1 }),
@@ -41,7 +41,7 @@ contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
       )
     })
 
-    it('prevents user without ap tokens from redeeming', async () => {
+    it('prevents user without AP tokens from redeeming', async () => {
       expect(await this.apToken.balanceOf(user2)).to.be.bignumber.equal(new BN('0'))
 
       await expectRevert(this.redeemer.redeem('0', { from: user2 }), 'Cannot redeem 0 tokens')
