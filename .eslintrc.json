@@ -10,7 +10,8 @@
     "artifacts": "readonly",
     "describe": "readonly",
     "beforeEach": "readonly",
-    "expect": "readonly"
+    "expect": "readonly",
+    "web3": "readonly"
   },
   "extends": "eslint:recommended",
   "parserOptions": {
