@@ -3,7 +3,7 @@ const { expect } = require('chai')
 
 const ActionPoints = artifacts.require('ActionPoints')
 
-contract('ActionPoints', ([main1, user1, user2, adversary1, adversary2]) => {
+contract('ActionPoints', ([main1, user1, user2, user3, adversary1, adversary2]) => {
   beforeEach(async () => {
     this.apToken = await ActionPoints.new({ from: main1 })
   })
@@ -75,6 +75,42 @@ contract('ActionPoints', ([main1, user1, user2, adversary1, adversary2]) => {
       expect(user2BalAfter.sub(user2BalBefore)).to.be.bignumber.equal(
         amountToSend,
         'invalid amount received'
+      )
+    })
+
+    it('can transfer using allowance', async () => {
+      const mintAmount = new BN(web3.utils.toWei('8'))
+      await this.apToken.directMint(user1, mintAmount, { from: main1 })
+      expect(await this.apToken.balanceOf(user1)).to.be.bignumber.equal(mintAmount)
+
+      const transferAmount = new BN(web3.utils.toWei('3'))
+
+      expectEvent(await this.apToken.approve(user2, transferAmount, { from: user1 }), 'Approval', {
+        owner: user1,
+        spender: user2,
+        value: transferAmount
+      })
+
+      expect(await this.apToken.balanceOf(user3)).to.be.bignumber.equal(new BN('0'))
+
+      expectEvent(
+        await this.apToken.transferFrom(user1, user3, transferAmount, { from: user2 }),
+        'Transfer',
+        {
+          from: user1,
+          to: user3,
+          value: transferAmount
+        }
+      )
+
+      expect(await this.apToken.balanceOf(user3)).to.be.bignumber.equal(
+        transferAmount,
+        'User did not receive tokens'
+      )
+
+      expect(await this.apToken.balanceOf(user1)).to.be.bignumber.equal(
+        mintAmount.sub(transferAmount),
+        'tokens deducted incorrectly'
       )
     })
   })

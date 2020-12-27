@@ -11,6 +11,12 @@ contract Redeemer {
     IERC20Burnable public apToken;
     IERC20 public farmToken;
 
+    event Redeemed(
+        address indexed redeemer,
+        uint256 apValue,
+        uint256 farmValue
+    );
+
     constructor(address apTokenAddr, address farmTokenAddr) {
         apToken = IERC20Burnable(apTokenAddr);
         farmToken = IERC20(farmTokenAddr);
@@ -20,9 +26,16 @@ contract Redeemer {
         require(tokens > 0, 'Cannot redeem 0 tokens');
 
         uint256 availableFARM = farmToken.balanceOf(address(this));
-        uint256 earnedFarm = tokens.mul(availableFARM).div(apToken.totalSupply());
+        uint256 earnedFarm = tokens.mul(availableFARM).div(
+            apToken.totalSupply(),
+            'no AP tokens exist'
+        );
+
+        require(earnedFarm > 0, 'worthless redeem');
 
         apToken.burnFrom(msg.sender, tokens);
         farmToken.transfer(msg.sender, earnedFarm);
+
+        emit Redeemed(msg.sender, tokens, earnedFarm);
     }
 }
