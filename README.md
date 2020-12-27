@@ -19,7 +19,8 @@ sends a portion of the available tokens stored in the contract.
 
 #### 1.2 Minting Action Points
 Approver contracts act as oracles to tell the Action Point contract when certain
-addresses can mint. 
+addresses can mint. Action Point tokens can also be minted directly by the owner
+via the `mintDirectly` method.
 
 #### 1.2.1 SingleEOAdapter
 This contract enables an owner to create signed message permitting others to
