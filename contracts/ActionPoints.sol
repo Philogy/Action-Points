@@ -22,4 +22,8 @@ contract ActionPoints is Ownable, ERC20Burnable {
         require(apOwner.approvesMint(nonce, amount, msg.sender, data), 'Mint denied');
         _mint(msg.sender, amount);
     }
+
+    function directMint(address recipient, uint256 amount) external onlyOwner {
+        _mint(recipient, amount);
+    }
 }
