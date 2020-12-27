@@ -19,14 +19,12 @@ contract SingleEOAAdapter is IApprovingOwner, Ownable {
         uint256 amount,
         address recipient
     ) public pure returns (bytes32) {
-        return ECDSA.toEthSignedMessageHash(
-            keccak256(abi.encodePacked(
-                APPROVE_MINT_PREFIX,
-                nonce,
-                amount,
-                recipient
-            ))
-        );
+        return keccak256(abi.encodePacked(
+            APPROVE_MINT_PREFIX,
+            nonce,
+            amount,
+            recipient
+        ));
     }
 
     function approvesMint(
@@ -37,8 +35,8 @@ contract SingleEOAAdapter is IApprovingOwner, Ownable {
     ) external override returns (bool) {
         require(!noncesUsed[recipient][nonce], 'Attempting to reuse nonce');
 
-        bytes32 hashToSign = messageToSign(nonce, amount, recipient);
-        bool signatureMatches = (ECDSA.recover(hashToSign, signature) == owner());
+        bytes32 possiblySignedHash = ECDSA.toEthSignedMessageHash(messageToSign(nonce, amount, recipient));
+        bool signatureMatches = (ECDSA.recover(possiblySignedHash, signature) == owner());
 
         if (signatureMatches) {
             noncesUsed[recipient][nonce] = true;
