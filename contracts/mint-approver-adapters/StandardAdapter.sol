@@ -11,7 +11,7 @@ abstract contract StandardAdapter is IApprovingOwner, Ownable {
 
     mapping(bytes32 => bool) public hashUsed;
 
-    event HashRedeemed(
+    event HashUsed(
         uint256 indexed nonce,
         uint256 amount,
         address indexed recipient
@@ -40,18 +40,13 @@ abstract contract StandardAdapter is IApprovingOwner, Ownable {
     ) external override returns (bool) {
         bytes32 messageHash = messageToSign(nonce, amount, recipient);
 
-        if (hashUsed[messageHash]) {
-            return false;
-        }
+        require(!hashUsed[messageHash], 'Hash already used');
+        require(isValidMsgHash(messageHash, data), 'Hash failed to validate');
 
-        bool validated = isValidMsgHash(messageHash, data);
+        hashUsed[messageHash] = true;
+        emit HashUsed(nonce, amount, recipient);
 
-        if (validated) {
-            hashUsed[messageHash] = true;
-            emit HashRedeemed(nonce, amount, recipient);
-        }
-
-        return validated;
+        return true;
     }
 
     function isValidMsgHash(bytes32 msgHash, bytes memory _data)
