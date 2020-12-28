@@ -1,5 +1,7 @@
 # Action-Points
 Contracts for creating, reedeming and distributing fungible "action point" tokens.
+Credit to https://github.com/vporton/safe-contracts/ for the solidity 0.7
+compatible gnosis safe contracts
 
 ### 1. Basic Structure
 The main token contract is `/contracts/ActionPoints.sol`. Upon deploying it will

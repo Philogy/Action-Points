@@ -3,12 +3,12 @@ pragma solidity ^0.7.1;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/math/SafeMath.sol';
-import './IERC20Burnable.sol';
+import './interfaces/IAPToken.sol';
 
 contract Redeemer {
     using SafeMath for uint256;
 
-    IERC20Burnable public apToken;
+    IAPToken public apToken;
     IERC20 public farmToken;
 
     event Redeemed(
@@ -18,7 +18,7 @@ contract Redeemer {
     );
 
     constructor(address apTokenAddr, address farmTokenAddr) {
-        apToken = IERC20Burnable(apTokenAddr);
+        apToken = IAPToken(apTokenAddr);
         farmToken = IERC20(farmTokenAddr);
     }
 
@@ -27,7 +27,7 @@ contract Redeemer {
 
         uint256 availableFARM = farmToken.balanceOf(address(this));
         uint256 earnedFarm = tokens.mul(availableFARM).div(
-            apToken.totalSupply(),
+            apToken.totalAllocatedSupply(),
             'no AP tokens exist'
         );
 

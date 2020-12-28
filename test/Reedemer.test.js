@@ -10,7 +10,7 @@ const ActionPoints = artifacts.require('ActionPoints')
 const Redeemer = artifacts.require('Redeemer')
 const TestFARM = artifacts.require('TestFARM')
 
-contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
+contract('Reedemer', ([main1, main2, main3, user1, user2, attacker1]) => {
   beforeEach(async () => {
     // instantiate contracts
     this.apToken = await ActionPoints.new({ from: main1 })
@@ -30,6 +30,8 @@ contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
       expect(await this.farm.balanceOf(this.redeemer.address)).to.be.bignumber.equal(
         this.initialRedeemerBalance
       )
+      expect(await this.farm.balanceOf(user1)).to.be.bignumber.equal(new BN('0'))
+      expect(await this.apToken.allocatedTokens()).to.be.bignumber.equal(new BN('0'))
     })
   })
 
@@ -102,6 +104,25 @@ contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
       })
 
       expect(await this.farm.balanceOf(user1)).to.be.bignumber.equal(expectedRedeemAmount)
+    })
+
+    it('reduces redeem value when new tokens are allocated', async () => {
+      await this.apToken.approve(this.redeemer.address, MAX_UINT256, { from: user1 })
+
+      const curTotalAllocatedSupply = await this.apToken.totalAllocatedSupply()
+      const intendedRedeemAmount = new BN(web3.utils.toWei('3'))
+      const initialFarmReward = intendedRedeemAmount
+        .mul(this.initialRedeemerBalance)
+        .div(curTotalAllocatedSupply)
+
+      // double total allocated supply
+      await this.apToken.allocateCoins(curTotalAllocatedSupply, { from: main1 })
+
+      await this.redeemer.redeem(intendedRedeemAmount, { from: user1 })
+      expect(await this.farm.balanceOf(user1)).to.be.bignumber.equal(
+        initialFarmReward.div(new BN('2')),
+        'reward not halved by doubling allocated supply'
+      )
     })
   })
 })

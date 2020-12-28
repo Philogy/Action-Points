@@ -3,7 +3,7 @@ const { expect } = require('chai')
 
 const ActionPoints = artifacts.require('ActionPoints')
 
-contract('ActionPoints', ([main1, user1, user2, user3, adversary1, adversary2]) => {
+contract('ActionPoints', ([main1, user1, user2, user3, attacker1, attacker2]) => {
   beforeEach(async () => {
     this.apToken = await ActionPoints.new({ from: main1 })
   })
@@ -39,11 +39,11 @@ contract('ActionPoints', ([main1, user1, user2, user3, adversary1, adversary2]) 
     })
 
     it('prevents non-owners from minting', async () => {
-      expect(await this.apToken.owner()).to.not.equal(adversary1, 'Wrong starting owner')
+      expect(await this.apToken.owner()).to.not.equal(attacker1, 'Wrong starting owner')
 
       const mintAmount = web3.utils.toWei('1000')
       await expectRevert(
-        this.apToken.directMint(adversary2, mintAmount, { from: adversary1 }),
+        this.apToken.directMint(attacker2, mintAmount, { from: attacker1 }),
         'Ownable: caller is not the owner'
       )
     })
@@ -111,6 +111,23 @@ contract('ActionPoints', ([main1, user1, user2, user3, adversary1, adversary2]) 
       expect(await this.apToken.balanceOf(user1)).to.be.bignumber.equal(
         mintAmount.sub(transferAmount),
         'tokens deducted incorrectly'
+      )
+    })
+  })
+
+  describe('allocating tokens', () => {
+    it('only owner can allocate new supply', async () => {
+      const supplyToAllocate = new BN(web3.utils.toWei('43'))
+      expectEvent(
+        await this.apToken.allocateCoins(supplyToAllocate, { from: main1 }),
+        'APTokensAllocated',
+        { currentlyAllocated: supplyToAllocate }
+      )
+
+      const maliciousAllocAmount = new BN(web3.utils.toWei('10000'))
+      await expectRevert(
+        this.apToken.allocateCoins(maliciousAllocAmount, { from: attacker1 }),
+        'Ownable: caller is not the owner'
       )
     })
   })

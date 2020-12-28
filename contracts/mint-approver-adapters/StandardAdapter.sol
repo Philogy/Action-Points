@@ -9,8 +9,6 @@ abstract contract StandardAdapter is IApprovingOwner, Ownable {
     // first 8 bytes of keccak256('AP_APPROVE_MINT')
     bytes8 constant internal APPROVE_MINT_PREFIX = 0xfd8bc5ba1c7980fc;
 
-    mapping(bytes32 => bool) public hashUsed;
-
     event HashUsed(
         uint256 indexed nonce,
         uint256 amount,
@@ -32,6 +30,12 @@ abstract contract StandardAdapter is IApprovingOwner, Ownable {
         ));
     }
 
+    function getHashUsed(bytes32 msgHash) public view returns (bool wasUsed) {
+        assembly {
+            wasUsed := and(sload(msgHash), 1)
+        }
+    }
+
     function approvesMint(
         uint256 nonce,
         uint256 amount,
@@ -40,10 +44,14 @@ abstract contract StandardAdapter is IApprovingOwner, Ownable {
     ) external override returns (bool) {
         bytes32 messageHash = messageToSign(nonce, amount, recipient);
 
-        require(!hashUsed[messageHash], 'Hash already used');
+        require(!getHashUsed(messageHash), 'Hash already used');
         require(isValidMsgHash(messageHash, data), 'Hash failed to validate');
 
-        hashUsed[messageHash] = true;
+        // avoid mapping to save gas, since no other mappings are used overlap
+        // impossible unless hashcollision is found
+        assembly {
+            sstore(messageHash, 1)
+        }
         emit HashUsed(nonce, amount, recipient);
 
         return true;
