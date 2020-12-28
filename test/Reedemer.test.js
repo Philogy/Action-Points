@@ -1,11 +1,14 @@
-const { BN, expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
+const {
+  BN,
+  expectEvent,
+  expectRevert,
+  constants: { MAX_UINT256 }
+} = require('@openzeppelin/test-helpers')
 const { expect } = require('chai')
 
 const ActionPoints = artifacts.require('ActionPoints')
 const Redeemer = artifacts.require('Redeemer')
 const TestFARM = artifacts.require('TestFARM')
-
-const MAX_UINT256 = new BN('1').shln(256).sub(new BN('1'))
 
 contract('Reedemer', ([main1, main2, main3, user1, user2]) => {
   beforeEach(async () => {
